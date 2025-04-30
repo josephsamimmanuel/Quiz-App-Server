@@ -2,20 +2,28 @@ const express = require('express');
 const examsRouter = express.Router();
 const { Exam, Question } = require('../models/examModel');
 const auth = require('../middleware/auth');
+const { GET_ALL_EXAMS, ADD_EXAM, EDIT_EXAM, DELETE_EXAM, GET_ALL_QUESTIONS, ADD_QUESTION, EDIT_QUESTION, DELETE_QUESTION } = require('../utils/constants');
 
 // get all exams
 
 examsRouter.get('/get-all-exams', auth, async (req, res) => {
     try {
         const exams = await Exam.find().populate('questions');
+        if (exams.length === 0) {
+            return res.status(200).json({
+                message: GET_ALL_EXAMS.EXAMS_NOT_FOUND,
+                success: true,
+                exams: []
+            });
+        }
         res.status(200).json({
-            message: 'Exams fetched successfully',
+            message: GET_ALL_EXAMS.EXAMS_FETCHED_SUCCESSFULLY,
             success: true,
-            data: exams
+            exams: exams
         });
     } catch (error) {
         res.status(500).json({
-            message: 'Internal server error',
+            message: GET_ALL_EXAMS.INTERNAL_SERVER_ERROR,
             success: false,
             error: error.message
         });
@@ -32,7 +40,7 @@ examsRouter.post('/add-exam', auth, async (req, res) => {
         const existingExam = await Exam.findOne({ name });
         if (existingExam) {
             return res.status(400).json({
-                message: 'Exam already exists',
+                message: ADD_EXAM.EXAM_ALREADY_EXISTS,
                 success: false,
             });
         }
@@ -41,13 +49,13 @@ examsRouter.post('/add-exam', auth, async (req, res) => {
         const exam = await Exam.create({ name, category, duration, passingMarks, totalMarks });
         
         res.status(201).json({
-            message: 'Exam added successfully',
+            message: ADD_EXAM.EXAM_ADDED_SUCCESSFULLY,
             success: true,
             data: exam
         });
     } catch (error) {
         res.status(500).json({
-            message: 'Internal server error',
+            message: ADD_EXAM.INTERNAL_SERVER_ERROR,
             success: false,
             error: error.message
         });
@@ -65,20 +73,20 @@ examsRouter.patch('/edit-exam/:id', auth, async (req, res) => {
         const exam = await Exam.findById(id);
         if (!exam) {
             return res.status(400).json({
-                message: 'Exam not found',
+                message: EDIT_EXAM.EXAM_NOT_FOUND,
                 success: false,
             });
         }
         // update exam
         const updatedExam = await Exam.findByIdAndUpdate(id, { name, category, duration, passingMarks, totalMarks }, { new: true });
         res.status(200).json({
-            message: 'Exam updated successfully',
+            message: EDIT_EXAM.EXAM_UPDATED_SUCCESSFULLY,
             success: true,
             data: updatedExam
         });
     } catch (error) {
         res.status(500).json({
-            message: 'Internal server error',
+            message: EDIT_EXAM.INTERNAL_SERVER_ERROR,
             success: false,
             error: error.message
         });
@@ -94,19 +102,19 @@ examsRouter.delete('/delete-exam/:id', auth, async (req, res) => {
         const exam = await Exam.findById(id);
         if (!exam) {
             return res.status(400).json({
-                message: 'Exam not found',
+                message: DELETE_EXAM.EXAM_NOT_FOUND,
                 success: false,
             });
         }
         // delete exam
         await Exam.findByIdAndDelete(id);
         res.status(200).json({
-            message: 'Exam deleted successfully',
+            message: DELETE_EXAM.EXAM_DELETED_SUCCESSFULLY,
             success: true,
         });
     } catch (error) {
         res.status(500).json({
-            message: 'Internal server error',
+            message: DELETE_EXAM.INTERNAL_SERVER_ERROR,
             success: false,
             error: error.message
         });
@@ -118,14 +126,21 @@ examsRouter.delete('/delete-exam/:id', auth, async (req, res) => {
 examsRouter.get('/get-all-questions', auth, async (req, res) => {
     try {
         const questions = await Question.find()
+        if (questions.length === 0) {
+            return res.status(200).json({
+                message: GET_ALL_QUESTIONS.QUESTIONS_NOT_FOUND,
+                success: true,
+                questions: []
+            });
+        }
         res.status(200).json({
-            message: 'Questions fetched successfully',
+            message: GET_ALL_QUESTIONS.QUESTIONS_FETCHED_SUCCESSFULLY,
             success: true,
-            data: questions
+            questions: questions
         });
     } catch (error) {
         res.status(500).json({
-            message: 'Internal server error',
+            message: GET_ALL_QUESTIONS.INTERNAL_SERVER_ERROR,
             success: false,
             error: error.message
         });
@@ -142,7 +157,7 @@ examsRouter.post('/add-question', auth, async (req, res) => {
         const exam = await Exam.findById(examId);
         if (!exam) {
             return res.status(400).json({
-                message: 'Exam not found',
+                message: ADD_QUESTION.QUESTION_ALREADY_EXISTS,
                 success: false,
             });
         }
@@ -163,13 +178,13 @@ examsRouter.post('/add-question', auth, async (req, res) => {
         await exam.save();
 
         res.status(201).json({
-            message: 'Question added successfully',
+            message: ADD_QUESTION.QUESTION_ADDED_SUCCESSFULLY,
             success: true,
             data: newQuestion
         });
     } catch (error) {
         res.status(500).json({
-            message: 'Internal server error',
+            message: ADD_QUESTION.INTERNAL_SERVER_ERROR,
             success: false,
             error: error.message
         });
@@ -186,20 +201,20 @@ examsRouter.patch('/edit-question/:id', auth, async (req, res) => {
         const existingQuestion = await Question.findById(id);
         if (!existingQuestion) {
             return res.status(400).json({
-                message: 'Question not found',
+                message: EDIT_QUESTION.QUESTION_NOT_FOUND,
                 success: false,
             });
         }
         // update question
         const updatedQuestion = await Question.findByIdAndUpdate(id, { question, options, answer, explanation, questionId, examId }, { new: true });
         res.status(200).json({
-            message: 'Question updated successfully',
+            message: EDIT_QUESTION.QUESTION_UPDATED_SUCCESSFULLY,
             success: true,
             data: updatedQuestion
         });
     } catch (error) {
         res.status(500).json({
-            message: 'Internal server error',
+            message: EDIT_QUESTION.INTERNAL_SERVER_ERROR,
             success: false,
             error: error.message
         });
@@ -215,19 +230,19 @@ examsRouter.delete('/delete-question/:id', auth, async (req, res) => {
         const question = await Question.findById(id);
         if (!question) {
             return res.status(400).json({
-                message: 'Question not found',
+                message: DELETE_QUESTION.QUESTION_NOT_FOUND,
                 success: false, 
             });
         }
         // delete question
         await Question.findByIdAndDelete(id);
         res.status(200).json({
-            message: 'Question deleted successfully',
+            message: DELETE_QUESTION.QUESTION_DELETED_SUCCESSFULLY,
             success: true,
         });
     } catch (error) {
         res.status(500).json({
-            message: 'Internal server error',
+            message: DELETE_QUESTION.INTERNAL_SERVER_ERROR,
             success: false, 
             error: error.message
         });

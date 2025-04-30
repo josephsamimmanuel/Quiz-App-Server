@@ -20,4 +20,15 @@ const userSchema = new mongoose.Schema({
     }
 }, { timestamps: true });
 
-module.exports = mongoose.model('User', userSchema);
+const profileSchema = new mongoose.Schema({
+    userId: {
+        type: mongoose.Schema.Types.ObjectId,
+        ref: 'User',
+        required: true
+    },
+})
+
+const User = mongoose.model('User', userSchema);
+const Profile = mongoose.model('Profile', profileSchema);
+
+module.exports = { User, Profile };
