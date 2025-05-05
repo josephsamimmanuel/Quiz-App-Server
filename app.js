@@ -9,11 +9,19 @@ const reportsRouter = require("./routes/reportsRoute");
 const PORT = process.env.PORT || 3000;
 
 app.use(express.json());
-app.use(cors({
+
+const allowedOrigins = [
+  "http://localhost:5173",
+  "https://quizappjoseph.netlify.app/",
+];
+
+app.use(
+  cors({
     // origin: "http://localhost:5173",
-    origin: "https://quizappjoseph.netlify.app/",
+    origin: allowedOrigins,
     credentials: true,
-}));
+  })
+);
 
 app.use("/api/users", usersRouter);
 app.use("/api/exams", examsRouter);
